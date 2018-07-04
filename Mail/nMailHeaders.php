@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class nMailHeaders
+ */
 class nMailHeaders {
 
     /**
@@ -42,10 +45,16 @@ class nMailHeaders {
      */
     private $size;
 
-    /**
-     * @param Object $mail_header
-     */
-    public function __construct($mail_header) {
+	/**
+	 * @var string
+	 */
+	protected $raw = '';
+
+	/**
+	 * @param Object $mail_header
+	 * @param string $raw
+	 */
+    public function __construct($mail_header, $raw = '') {
 //      stdClass Object (
 //          [date] => Mon, 31 Jul 2017 11:37:27 +0300
 //          [Date] => Mon, 31 Jul 2017 11:37:27 +0300
@@ -53,14 +62,14 @@ class nMailHeaders {
 //          [Subject] => =?koi8-r?B?9MXT1CAxMjM=?=
 //          [message_id] => <1501490247.328139.4906.33185@mail.rambler.ru>
 //          [toaddress] => nikll@ur66.ru
-//          [to] => Array (
+//          [to] => array (
 //              [0] => stdClass Object (
 //                  [mailbox] => nikll
 //                  [host] => ur66.ru
 //              )
 //          )
 //          [fromaddress] => =?koi8-r?B?68/UzNHSz9cg7snLz8zByg==?= <nikll@rambler.ru>
-//          [from] => Array (
+//          [from] => array (
 //              [0] => stdClass Object (
 //                  [personal] => =?koi8-r?B?68/UzNHSz9cg7snLz8zByg==?=
 //                  [mailbox] => nikll
@@ -68,7 +77,7 @@ class nMailHeaders {
 //              )
 //          )
 //          [reply_toaddress] => =?koi8-r?B?68/UzNHSz9cg7snLz8zByg==?= <nikll@rambler.ru>
-//          [reply_to] => Array (
+//          [reply_to] => array (
 //              [0] => stdClass Object (
 //                  [personal] => =?koi8-r?B?68/UzNHSz9cg7snLz8zByg==?=
 //                  [mailbox] => nikll
@@ -76,7 +85,7 @@ class nMailHeaders {
 //              )
 //          )
 //          [senderaddress] => =?koi8-r?B?68/UzNHSz9cg7snLz8zByg==?= <nikll@rambler.ru>
-//          [sender] => Array (
+//          [sender] => array (
 //              [0] => stdClass Object (
 //                  [personal] => =?koi8-r?B?68/UzNHSz9cg7snLz8zByg==?=
 //                  [mailbox] => nikll
@@ -96,11 +105,11 @@ class nMailHeaders {
 //      )
 
         $header_mail = array(
-            'msgno'   => (property_exists($mail_header, 'msgno')           ? iconv_mime_decode($mail_header->msgno          ): null),
-            'to'      => (property_exists($mail_header, 'toaddress')       ? iconv_mime_decode($mail_header->toaddress      ): null),
-            'from'    => (property_exists($mail_header, 'fromaddress')     ? iconv_mime_decode($mail_header->fromaddress    ): null),
-            'reply'   => (property_exists($mail_header, 'reply_toaddress') ? iconv_mime_decode($mail_header->reply_toaddress): null),
-            'subject' => (property_exists($mail_header, 'subject')         ? iconv_mime_decode($mail_header->subject        ): null),
+            'msgno'   => (property_exists($mail_header, 'msgno')           ? iconv_mime_decode($mail_header->msgno          ) : null),
+            'to'      => (property_exists($mail_header, 'toaddress')       ? iconv_mime_decode($mail_header->toaddress      ) : null),
+            'from'    => (property_exists($mail_header, 'fromaddress')     ? iconv_mime_decode($mail_header->fromaddress    ) : null),
+            'reply'   => (property_exists($mail_header, 'reply_toaddress') ? iconv_mime_decode($mail_header->reply_toaddress) : null),
+            'subject' => (property_exists($mail_header, 'subject')         ? iconv_mime_decode($mail_header->subject        ) : null),
             'udate'   => (property_exists($mail_header, 'udate')           ? $mail_header->udate           : null),
             'unseen'  => (property_exists($mail_header, 'Unseen')          ? $mail_header->Unseen          : null),
             'size'    => (property_exists($mail_header, 'Size')            ? $mail_header->Size            : null)
@@ -114,8 +123,22 @@ class nMailHeaders {
         $this->setUnseen($header_mail['unseen'] == 'U');
         $this->date = new DateTime('@'.$header_mail['udate']);
         $this->size = $header_mail['size'];
+        $this->raw = $raw;
     }
 
+
+    /**
+     * @return array
+     */
+    public function getHeadersWithRFC() {
+        return array(
+            iconv_mime_encode('To', $this->to),
+            iconv_mime_encode('From', $this->from),
+            iconv_mime_encode('Reply-To', $this->reply),
+            iconv_mime_encode('Subject', $this->subject),
+            iconv_mime_encode('Date', $this->date->format(DateTime::RFC1123))
+        );
+    }
     /*********************/
     /* Getter and Setter */
     /*********************/
@@ -279,18 +302,40 @@ class nMailHeaders {
         return $this->size;
     }
 
-    /**
-     * Set the SIZE
-     *
-     * @param int $size The size
-     *
-     * @return nMailHeaders
-     */
-    public function setSize($size) {
-        $this->size = $size;
+	/**
+	 * Set the SIZE
+	 *
+	 * @param int $size The size
+	 *
+	 * @return nMailHeaders
+	 */
+	public function setSize($size) {
+		$this->size = $size;
 
-        return $this;
-    }
+		return $this;
+	}
+
+	/**
+	 * Get the raw headers
+	 *
+	 * @return string
+	 */
+	public function getRaw() {
+		return $this->raw;
+	}
+
+	/**
+	 * Set the raw headers
+	 *
+	 * @param string $raw
+	 *
+	 * @return nMailHeaders
+	 */
+	public function setRaw($raw) {
+		$this->raw = $raw;
+
+		return $this;
+	}
 
     /**
      * Search in the header throught a pattern
@@ -317,7 +362,8 @@ class nMailHeaders {
             'subject' => $this->subject,
             'unseen'  => $this->unseen,
             'date'    => $this->date,
-            'size'    => $this->size
+			'size'    => $this->size,
+			'raw'     => $this->raw
         );
     }
 

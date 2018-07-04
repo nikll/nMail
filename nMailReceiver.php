@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class nMailReceiver
+ */
 class nMailReceiver {
     /** @var nMailer */
     protected $mailer;
@@ -60,7 +63,6 @@ class nMailReceiver {
      */
     public function createMailer() {
         $this->mailer = new nMailer();
-
         $this->mailer->connect($this->getUrl(), $this->username, $this->password);
 
         return $this->mailer;

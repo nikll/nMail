@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class nMailAttachment
+ */
 class nMailAttachment {
 
     /**
@@ -77,6 +80,15 @@ class nMailAttachment {
     public function getContent() {
         return $this->content;
     }
+
+	/**
+	 * @param $fileName
+	 *
+	 * @return bool|int
+	 */
+	public function save($fileName) {
+    	return file_put_contents($fileName, $this->getContent());
+	}
 
     /**
      * @param string $content The content
